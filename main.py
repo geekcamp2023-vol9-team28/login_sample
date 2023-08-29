@@ -60,33 +60,50 @@ async def callback(request: Request, code: str = None):
         response = await client.get(user_info_url, headers=headers)
         user_info = response.json()
 
-    # JWTトークンを発行 期限1分
-    ACCESS_TOKEN_EXPIRE_MINUTES = 1
+    # JWTトークンを発行
     jwt_access_token = create_access_token(
-        data={"sub": user_info["id"],"email": user_info["email"]}, expires_delta=timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+        data={"sub": user_info["id"],"email": user_info["email"]}, expires_delta=timedelta(minutes=0.1)
+    )
+    
+    jwt_refresh_token = create_access_token(
+        data={"sub": user_info["id"],"email": user_info["email"]}, expires_delta=timedelta(minutes=1) #days=90
     )
 
     # JWTトークンをリダイレクトURLに付加してリダイレクト
-    redirect_url = f"/profile?token={jwt_access_token}"
-    print(user_info)
+    redirect_url = f"/profile?access_token={jwt_access_token}&refresh_token={jwt_refresh_token}"
+    
     return RedirectResponse(url=redirect_url)
 
 @app.get("/profile", response_class=HTMLResponse)
+async def profile_page(request: Request, access_token: str = None, refresh_token : str = None):
 
-async def profile_page(request: Request, token: str = None):
-
-    if token is None:
+    if access_token is None:
         return "Token is missing."
 
     # JWTトークンを検証
-    user_id, user_email, error_message =check_jwt_token(token)
+    user_id, user_email, is_access_available = check_jwt_token(access_token)
+    
+    p_state = "<p>ログイン中</p>"
+    
+    if is_access_available is False and refresh_token :
+        user_id, user_email, is_refresh_available = check_jwt_token(refresh_token)
+        if is_refresh_available is True:
+            new_access_token = create_access_token(
+                data={"sub": user_id, "email": user_email},
+                expires_delta=timedelta(minutes=0.1)
+            )
+            return RedirectResponse(f"/profile?access_token={new_access_token}&refresh_token={refresh_token}")
+        else:
+            p_state = '<a href="/login"><button>ログインし直し下さい</button></a>'
 
-
-    # プロフィール情報を表示
+    # ログイン情報を表示
     return f"""
         <h1>Profile</h1>
         <p>User ID: {user_id}</p>
         <p>Email: {user_email}</p>
+        <p>access_token:{access_token}</p>
+        <p>refresh_token:{refresh_token}</p>
+        {p_state}
     """
 
 if __name__ == "__main__":

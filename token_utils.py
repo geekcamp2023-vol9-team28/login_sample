@@ -23,8 +23,8 @@ def check_jwt_token(token:str):
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         user_id: str = payload.get("sub")
         if user_id is None:
-            return None,None, "Invalid token."
+            return None,None, False
         email: str = payload.get("email")
-        return user_id, email, "sucess"
+        return user_id, email, True
     except JWTError:
-        return None,None, "Invalid token."
+        return None,None, False
