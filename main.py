@@ -11,7 +11,6 @@ GOOGLE_SECRET_ID = ""
 # Google OAuth2.0認証用のURL
 GOOGLE_AUTH_URL = f"https://accounts.google.com/o/oauth2/auth?client_id={GOOGLE_CLIENT_ID}&redirect_uri={GOOGLE_REDIRECT_URI}&response_type=code&scope=openid%20profile%20email"
 
-# ログインページ
 @app.get("/login", response_class=HTMLResponse)
 async def login_page(request: Request):
     return f"""
@@ -20,12 +19,10 @@ async def login_page(request: Request):
     </form>
     """
 
-# ログイン処理
 @app.post("/login")
 async def login():
     return RedirectResponse(url=GOOGLE_AUTH_URL)
 
-# Googleからのコールバックを受け取るエンドポイント
 # コールバック処理
 @app.get("/callback")
 async def callback(request: Request, code: str = None):
