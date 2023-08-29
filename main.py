@@ -4,9 +4,9 @@ import httpx
 
 app = FastAPI()
 
-GOOGLE_CLIENT_ID = ""
-GOOGLE_REDIRECT_URI = "http://127.0.0.1:8000/callback"
-GOOGLE_SECRET_ID = ""
+GOOGLE_CLIENT_ID = "792019492465-tg1jb8i439htf23k6o1a93f6bcqn05es.apps.googleusercontent.com"
+GOOGLE_REDIRECT_URI = "http://localhost:9000/callback"
+GOOGLE_SECRET_ID = "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"
 
 # Google OAuth2.0認証用のURL
 GOOGLE_AUTH_URL = f"https://accounts.google.com/o/oauth2/auth?client_id={GOOGLE_CLIENT_ID}&redirect_uri={GOOGLE_REDIRECT_URI}&response_type=code&scope=openid%20profile%20email"
@@ -58,4 +58,4 @@ async def callback(request: Request, code: str = None):
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    uvicorn.run(app, host="0.0.0.0", port=9000)
